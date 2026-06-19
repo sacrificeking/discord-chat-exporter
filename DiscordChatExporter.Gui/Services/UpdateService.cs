@@ -19,7 +19,7 @@ public class UpdateService : IDisposable
         _updateManager = new UpdateManager(
             new GithubPackageResolver(
                 "sacrificeking",
-                "discord-chat-exporter",
+                "DiscordChatExporter",
                 "DiscordChatExporter.zip"
             ),
             new ZipPackageExtractor()
