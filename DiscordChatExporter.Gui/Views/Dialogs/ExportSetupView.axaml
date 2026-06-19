@@ -68,7 +68,7 @@
                 <StackPanel Orientation="Vertical">
                     <!--  Output path  -->
                     <TextBox
-                        Margin="16,8"
+                        Margin="16,8,16,0"
                         materialAssists:TextFieldAssist.Label="Output path"
                         Text="{Binding OutputPath}"
                         Theme="{DynamicResource FilledTextBox}">
@@ -142,6 +142,13 @@
                             </Button>
                         </TextBox.InnerRightContent>
                     </TextBox>
+                    <TextBlock
+                        Margin="16,4,16,8"
+                        FontSize="12"
+                        Foreground="{DynamicResource MaterialBodyBrush}"
+                        Opacity="0.7"
+                        Text="{Binding OutputPathPreview}"
+                        TextTrimming="CharacterEllipsis" />
 
                     <!--  Format  -->
                     <ComboBox
@@ -161,7 +168,7 @@
                     <!--  Advanced section  -->
                     <StackPanel IsVisible="{Binding IsAdvancedSectionDisplayed}" Orientation="Vertical">
                         <!--  Date limits  -->
-                        <Grid ColumnDefinitions="*,*" RowDefinitions="*,*">
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="*,*,Auto">
                             <DatePicker
                                 Grid.Row="0"
                                 Grid.Column="0"
@@ -228,6 +235,16 @@
                                     </Style>
                                 </TimePicker.Styles>
                             </TimePicker>
+                            
+                            <!-- Validation Error -->
+                            <TextBlock 
+                                Grid.Row="2" 
+                                Grid.Column="0" 
+                                Grid.ColumnSpan="2"
+                                Margin="16,0"
+                                Foreground="{DynamicResource MaterialValidationErrorBrush}"
+                                Text="The 'After' date must be earlier than the 'Before' date."
+                                IsVisible="{Binding IsDateRangeInvalid}" />
                         </Grid>
 
                         <!--  Partitioning  -->
@@ -311,15 +328,10 @@
                 IsChecked="{Binding IsAdvancedSectionDisplayed}"
                 Theme="{DynamicResource MaterialOutlineButton}"
                 ToolTip.Tip="Toggle advanced options">
-                <Button.Styles>
-                    <Style Selector="ToggleButton">
-                        <Setter Property="Content" Value="MORE" />
-
-                        <Style Selector="^:checked">
-                            <Setter Property="Content" Value="LESS" />
-                        </Style>
-                    </Style>
-                </Button.Styles>
+                <Panel>
+                    <materialIcons:MaterialIcon IsVisible="{Binding $parent[ToggleButton].IsChecked}" Kind="ChevronUp" Width="24" Height="24" />
+                    <materialIcons:MaterialIcon IsVisible="{Binding !$parent[ToggleButton].IsChecked}" Kind="ChevronDown" Width="24" Height="24" />
+                </Panel>
             </ToggleButton>
 
             <Button

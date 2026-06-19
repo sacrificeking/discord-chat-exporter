@@ -45,6 +45,8 @@
                         <ToggleSwitch DockPanel.Dock="Right" IsChecked="{Binding IsAutoUpdateEnabled}" />
                     </DockPanel>
 
+
+
                     <!--  Persist token  -->
                     <DockPanel
                         Margin="16,8"

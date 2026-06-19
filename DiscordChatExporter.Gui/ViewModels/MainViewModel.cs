@@ -13,7 +13,6 @@ namespace DiscordChatExporter.Gui.ViewModels;
 
 public partial class MainViewModel(
     ViewModelManager viewModelManager,
-    DialogManager dialogManager,
     SnackbarManager snackbarManager,
     SettingsService settingsService,
     UpdateService updateService
@@ -22,56 +21,6 @@ public partial class MainViewModel(
     public string Title { get; } = $"{Program.Name} v{Program.VersionString}";
 
     public DashboardViewModel Dashboard { get; } = viewModelManager.CreateDashboardViewModel();
-
-    private async Task ShowUkraineSupportMessageAsync()
-    {
-        if (!settingsService.IsUkraineSupportMessageEnabled)
-            return;
-
-        var dialog = viewModelManager.CreateMessageBoxViewModel(
-            "Thank you for supporting Ukraine!",
-            """
-            As Russia wages a genocidal war against my country, I'm grateful to everyone who continues to stand with Ukraine in our fight for freedom.
-
-            Click LEARN MORE to find ways that you can help.
-            """,
-            "LEARN MORE",
-            "CLOSE"
-        );
-
-        // Disable this message in the future
-        settingsService.IsUkraineSupportMessageEnabled = false;
-        settingsService.Save();
-
-        if (await dialogManager.ShowDialogAsync(dialog) == true)
-            ProcessEx.StartShellExecute("https://tyrrrz.me/ukraine?source=discordchatexporter");
-    }
-
-    private async Task ShowDevelopmentBuildMessageAsync()
-    {
-        if (!Program.IsDevelopmentBuild)
-            return;
-
-        // If debugging, the user is likely a developer
-        if (Debugger.IsAttached)
-            return;
-
-        var dialog = viewModelManager.CreateMessageBoxViewModel(
-            "Unstable build warning",
-            $"""
-            You're using a development build of {Program.Name}. These builds are not thoroughly tested and may contain bugs.
-
-            Auto-updates are disabled for development builds.
-
-            Click SEE RELEASES if you want to download a stable release instead.
-            """,
-            "SEE RELEASES",
-            "CLOSE"
-        );
-
-        if (await dialogManager.ShowDialogAsync(dialog) == true)
-            ProcessEx.StartShellExecute(Program.ProjectReleasesUrl);
-    }
 
     private async Task CheckForUpdatesAsync()
     {
@@ -106,8 +55,6 @@ public partial class MainViewModel(
     [RelayCommand]
     private async Task InitializeAsync()
     {
-        await ShowUkraineSupportMessageAsync();
-        await ShowDevelopmentBuildMessageAsync();
         await CheckForUpdatesAsync();
     }
 

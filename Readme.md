@@ -1,81 +1,94 @@
-# DiscordChatExporter
+# Discord Chat Exporter
 
-[![Status](https://img.shields.io/badge/status-maintenance-ffd700.svg)](https://github.com/Tyrrrz/.github/blob/master/docs/project-status.md)
-[![Made in Ukraine](https://img.shields.io/badge/made_in-ukraine-ffd700.svg?labelColor=0057b7)](https://tyrrrz.me/ukraine)
-[![Build](https://img.shields.io/github/actions/workflow/status/Tyrrrz/DiscordChatExporter/main.yml?branch=master)](https://github.com/Tyrrrz/DiscordChatExporter/actions)
-[![Coverage](https://img.shields.io/codecov/c/github/Tyrrrz/DiscordChatExporter/master)](https://codecov.io/gh/Tyrrrz/DiscordChatExporter)
-[![Release](https://img.shields.io/github/release/Tyrrrz/DiscordChatExporter.svg)](https://github.com/Tyrrrz/DiscordChatExporter/releases)
-[![Downloads](https://img.shields.io/github/downloads/Tyrrrz/DiscordChatExporter/total.svg)](https://github.com/Tyrrrz/DiscordChatExporter/releases)
-[![Pulls](https://img.shields.io/docker/pulls/tyrrrz/discordchatexporter)](https://hub.docker.com/r/tyrrrz/discordchatexporter)
-[![Discord](https://img.shields.io/discord/869237470565392384?label=discord)](https://discord.gg/2SUWKFnHSm)
-[![Fuck Russia](https://img.shields.io/badge/fuck-russia-e4181c.svg?labelColor=000000)](https://twitter.com/tyrrrz/status/1495972128977571848)
+**A simple, yet powerful tool to export message history from any Discord channel to a file.**
 
-<table>
-    <tr>
-        <td width="99999" align="center">Development of this project is entirely funded by the community. <b><a href="https://tyrrrz.me/donate">Consider donating to support!</a></b></td>
-    </tr>
-</table>
+This program allows you to download chat history from Discord servers and Direct Messages. It exports your conversations significantly faster and more reliably than manual copying, saving them in formats like HTML, TXT, CSV, or JSON.
 
-<p align="center">
-    <img src="favicon.png" alt="Icon" />
-</p>
+---
 
-**DiscordChatExporter** is an application that can be used to export message history from any [Discord](https://discord.com) channel to a file.
-It works with direct messages, group messages, and server channels, and supports Discord's dialect of markdown as well as most other rich media features.
+## ✨ Features
 
-> ❔ If you have questions or issues, **please refer to the [docs](.docs)**.
+-   **Graphical Interface**: A clean, modern Windows application that is easy to use.
+-   **⭐ Favorites System**: Mark your most important channels across different servers as favorites. View and export them all from a single list!
+-   **Multiple Export Formats**:
+    -   **HTML (Dark/Light)**: Looks just like Discord! Great for reading.
+    -   **TXT**: Plain text, good for searching and archiving.
+    -   **CSV / JSON**: Structured data for developers or analysis.
+-   **Rich Media Support**: Downloads images, videos, emojis, and renders markdown correctly.
+-   **Flexible Filtering**: Export by date range, partition by size, or filter specific messages.
+-   **Cross-Platform Core**: While the GUI is designed for Windows, the underlying engine supports Docker, macOS, and Linux (via CLI).
 
-> 💬 If you want to chat, **join my [Discord server](https://discord.gg/2SUWKFnHSm)**.
+---
 
-## Terms of use<sup>[[?]](https://github.com/Tyrrrz/.github/blob/master/docs/why-so-political.md)</sup>
+## 🚀 Getting Started
 
-By using this project or its source code, for any purpose and in any shape or form, you grant your **implicit agreement** to all the following statements:
+### Prerequisites
 
-- You **condemn Russia and its military aggression against Ukraine**
-- You **recognize that Russia is an occupant that unlawfully invaded a sovereign state**
-- You **support Ukraine's territorial integrity, including its claims over temporarily occupied territories of Crimea and Donbas**
-- You **reject false narratives perpetuated by Russian state propaganda**
+To run this application, you need **Windows** and the **.NET 9 Desktop Runtime**.
+> [!TIP]
+> **Download .NET 9 Desktop Runtime here:** [Microsoft .NET Download Page](https://dotnet.microsoft.com/download/dotnet/9.0) -> Look for ".NET Desktop Runtime" under Windows.
 
-To learn more about the war and how you can help, [click here](https://tyrrrz.me/ukraine). Glory to Ukraine! 🇺🇦
+### Installation
 
-## Download
+1.  **Download**: Go to the **Releases** page (on the right side of GitHub) and download the latest `DiscordChatExporter.zip`.
+2.  **Unzip**: Right-click the downloaded file and select **Extract All**. *Do not run the program directly inside the zip file.*
+3.  **Run**: Open the extracted folder and double-click `DiscordChatExporter.exe`.
 
-- **Graphical user interface** (desktop app):
-  - 🟢 **[Stable release](https://github.com/Tyrrrz/DiscordChatExporter/releases/latest)**: look for `DiscordChatExporter.*.zip`
-  - 🟠 [CI build](https://github.com/Tyrrrz/DiscordChatExporter/actions/workflows/main.yml): look for `DiscordChatExporter.*.zip`
-- **Command-line interface** (terminal app):
-  - 🟢 **[Stable release](https://github.com/Tyrrrz/DiscordChatExporter/releases/latest)**: look for `DiscordChatExporter.Cli.*.zip`
-  - 🟠 [CI build](https://github.com/Tyrrrz/DiscordChatExporter/actions/workflows/main.yml): look for `DiscordChatExporter.Cli.*.zip`
-  - 🐋 [Docker](https://hub.docker.com/r/tyrrrz/discordchatexporter): `docker pull tyrrrz/discordchatexporter`
-  - 📦 [AUR](https://aur.archlinux.org/packages/discord-chat-exporter-cli): `discord-chat-exporter-cli`
-  - 📦 [Nix](https://search.nixos.org/packages?query=discordchatexporter-cli): `discordchatexporter-cli`
+---
 
-> **Important**:
-> To launch the GUI version of the app on MacOS, you need to first remove the downloaded file from quarantine.
-> You can do that by running the following command in the terminal: `xattr -rd com.apple.quarantine DiscordChatExporter.app`.
+## 📖 How to Use
 
-> **Note**:
-> If you're unsure which build is right for your system, consult with [this page](https://useragent.cc) to determine your OS and CPU architecture.
+### 1. Authentication
+To access your chats, the program needs a **Token**. This is your personal access key.
+-   **Automatic**: Detailed instructions on how to get your token are available in the [Token Guide](https://github.com/Tyrrrz/DiscordChatExporter/blob/master/.docs/Token-and-IDs.md).
+-   **Paste Token**: Copy your token into the box at the top of the program and press the `→` (Arrow) button or `Enter`.
 
-> **Note**:
-> AUR and Nix packages linked above are maintained by the community.
-> If you have any issues with them, please contact the corresponding maintainers.
+### 2. Selecting Channels
+Once logged in, you will see a list of servers on the left.
+-   **Servers**: Click a server icon to see its channels.
+-   **Direct Messages**: Click the Discord icon (top left) to see your private chats.
+-   **⭐ Favorites**: Click the **Star Icon** at the top of the server list to see all your favorited channels in one place.
 
-## Features
+### 3. Managing Favorites (New!)
+You can now organize channels from different servers into one easy-to-access list.
+-   **Add to Favorites**: In any channel list, click the **Star** icon next to a channel name. It will turn Gold ⭐️.
+-   **View Favorites**: Click the **Star Server** at the top of the left sidebar.
+-   **Export Favorites**: Select channels in the Favorites view to export them all at once, even if they belong to different servers.
 
-- Cross-platform graphical and command-line interfaces
-- Authentication via either a user or a bot token
-- Multiple output formats: HTML (dark/light), TXT, CSV, JSON
-- Support for markdown, attachments, embeds, emoji, and other rich media features
-- File partitioning, date ranges, message filtering, and other export options
-- Self-contained exports that can be viewed offline
+### 4. Exporting
+1.  **Select**: Click on the channels you want to export (hold `Ctrl` to select multiple).
+2.  **Download**: Click the **Download Button** (bottom right corner).
+3.  **Configure**:
+    -   **Output Format**: HTML (Dark) is recommended for best viewing.
+    -   **Directory**: Choose where to save the files.
+    -   **Assets**: Check "Download Assets" if you want images and profile pictures saved locally (offline view).
+4.  **Start**: Click **Export** and watch the progress bars!
 
-## Screenshots
+---
 
-![channel list](.assets/list.png)
-![rendered output](.assets/output.png)
+## 🛠 Advanced Usage (CLI)
 
-## See also
+For developers or server automation, a Command-Line Interface (CLI) is included.
 
-- [**Chat Analytics**](https://github.com/mlomb/chat-analytics) — solution for analyzing chat patterns of Discord users, using exports produced by **DiscordChatExporter**.
-- [**DiscordChatExporter-frontend**](https://github.com/slatinsky/DiscordChatExporter-frontend) — convenient viewer for exports produced by **DiscordChatExporter**.
+```bash
+# Example: Export a channel to HTML
+dotnet DiscordChatExporter.Cli.dll export -t "YOUR_TOKEN" -c "CHANNEL_ID" -f HtmlDark
+```
+
+Run `dotnet DiscordChatExporter.Cli.dll --help` to see all available commands.
+
+---
+
+## ❓ Troubleshooting
+
+**"The application won't start"**
+*   Please verify you have installed the [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0).
+*   Try running the `.exe` as Administrator.
+
+**"Access Denied" or "401 Unauthorized"**
+*   Your Token might have expired or changed (this happens if you change your password). Please get a fresh token.
+*   Make sure you have access to the channel you are trying to export.
+
+See the [Changelog](CHANGELOG.md) for details on recent updates. Released under the [MIT License](License.txt).
+
+*This project is built with ❤️ using C#, Avalonia UI, and .NET 9.*

@@ -95,6 +95,133 @@ public partial class ExportSetupViewModel(
             ? MessageFilter.Parse(MessageFilterValue)
             : MessageFilter.Null;
 
+    [ObservableProperty]
+    public partial string? OutputPathPreview { get; private set; }
+
+    [ObservableProperty]
+    public partial bool IsDateRangeInvalid { get; private set; }
+
+    partial void OnOutputPathChanged(string? value) => UpdateOutputPathPreview();
+
+    partial void OnSelectedFormatChanged(ExportFormat value) => UpdateOutputPathPreview();
+
+    partial void OnAfterDateChanged(DateTimeOffset? value)
+    {
+        UpdateOutputPathPreview();
+        ValidateDateRange();
+    }
+
+    partial void OnAfterTimeChanged(TimeSpan? value)
+    {
+        UpdateOutputPathPreview();
+        ValidateDateRange();
+    }
+
+    partial void OnBeforeDateChanged(DateTimeOffset? value)
+    {
+        UpdateOutputPathPreview();
+        ValidateDateRange();
+    }
+
+    partial void OnBeforeTimeChanged(TimeSpan? value)
+    {
+        UpdateOutputPathPreview();
+        ValidateDateRange();
+    }
+
+    private void UpdateOutputPathPreview()
+    {
+        if (Guild is null || Channels is null || !Channels.Any())
+        {
+            OutputPathPreview = null;
+            return;
+        }
+
+        // For preview, we only care about the first channel if multiple are selected,
+        // or just show a generic preview. Use the first channel for the sample.
+        var channel = Channels.First();
+
+        var path = OutputPath;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            // If empty, show default file name
+            if (IsSingleChannel)
+            {
+                OutputPathPreview = ExportRequest.GetDefaultOutputFileName(
+                    Guild,
+                    channel,
+                    SelectedFormat,
+                    After?.Pipe(Snowflake.FromDate),
+                    Before?.Pipe(Snowflake.FromDate)
+                );
+            }
+            else
+            {
+                // Directory export
+                OutputPathPreview = "Output will be generated in separate files per channel.";
+            }
+
+            return;
+        }
+
+        // Format the path using the core logic
+        try
+        {
+            var formatted = ExportRequest.FormatPath(
+                path,
+                Guild,
+                channel,
+                After?.Pipe(Snowflake.FromDate),
+                Before?.Pipe(Snowflake.FromDate)
+            );
+
+            // If it's a directory (or intended as one), append the filename for completeness in preview
+            // logic similar to ExportRequest.GetOutputBaseFilePath but simplified for preview
+            if (IsSingleChannel)
+            {
+                if (
+                    System.IO.Directory.Exists(formatted)
+                    || string.IsNullOrWhiteSpace(System.IO.Path.GetExtension(formatted))
+                )
+                {
+                    var fileName = ExportRequest.GetDefaultOutputFileName(
+                        Guild,
+                        channel,
+                        SelectedFormat,
+                        After?.Pipe(Snowflake.FromDate),
+                        Before?.Pipe(Snowflake.FromDate)
+                    );
+
+                    OutputPathPreview = System.IO.Path.Combine(formatted, fileName);
+                }
+                else
+                {
+                    OutputPathPreview = formatted;
+                }
+            }
+            else
+            {
+                OutputPathPreview = $"Directory: {formatted}";
+            }
+        }
+        catch
+        {
+            OutputPathPreview = "Invalid path pattern";
+        }
+    }
+
+    private void ValidateDateRange()
+    {
+        if (After is not null && Before is not null)
+        {
+            IsDateRangeInvalid = After > Before;
+        }
+        else
+        {
+            IsDateRangeInvalid = false;
+        }
+    }
+
     [RelayCommand]
     private void Initialize()
     {
@@ -117,6 +244,9 @@ public partial class ExportSetupViewModel(
             || ShouldDownloadAssets
             || ShouldReuseAssets
             || !string.IsNullOrWhiteSpace(AssetsDirPath);
+
+        UpdateOutputPathPreview();
+        ValidateDateRange();
     }
 
     [RelayCommand]

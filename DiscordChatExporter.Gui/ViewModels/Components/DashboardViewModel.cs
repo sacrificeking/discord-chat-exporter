@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DiscordChatExporter.Core.Discord;
 using DiscordChatExporter.Core.Discord.Data;
+using DiscordChatExporter.Core.Discord.Data.Common;
 using DiscordChatExporter.Core.Exceptions;
 using DiscordChatExporter.Core.Exporting;
 using DiscordChatExporter.Core.Utils.Extensions;
@@ -23,6 +24,9 @@ namespace DiscordChatExporter.Gui.ViewModels.Components;
 
 public partial class DashboardViewModel : ViewModelBase
 {
+    public static Guild FavoritesGuild { get; } =
+        new(new Snowflake(ulong.MaxValue), "Favorites", ImageCdn.GetFallbackUserAvatarUrl());
+
     private readonly ViewModelManager _viewModelManager;
     private readonly SnackbarManager _snackbarManager;
     private readonly DialogManager _dialogManager;
@@ -86,9 +90,12 @@ public partial class DashboardViewModel : ViewModelBase
     public partial Guild? SelectedGuild { get; set; }
 
     [ObservableProperty]
-    public partial IReadOnlyList<ChannelConnection>? AvailableChannels { get; set; }
+    public partial IReadOnlyList<ChannelViewModel>? AvailableChannels { get; set; }
 
-    public ObservableCollection<ChannelConnection> SelectedChannels { get; } = [];
+    public ObservableCollection<ChannelViewModel> SelectedChannels { get; } = [];
+
+    [ObservableProperty]
+    public partial string? ExportStatusText { get; set; }
 
     [RelayCommand]
     private void Initialize()
@@ -128,7 +135,7 @@ public partial class DashboardViewModel : ViewModelBase
 
             var guilds = await _discord.GetUserGuildsAsync();
 
-            AvailableGuilds = guilds;
+            AvailableGuilds = [FavoritesGuild, .. guilds];
             SelectedGuild = guilds.FirstOrDefault();
 
             await PullChannelsAsync();
@@ -172,8 +179,88 @@ public partial class DashboardViewModel : ViewModelBase
             var channels = new List<Channel>();
 
             // Regular channels
-            await foreach (var channel in _discord.GetGuildChannelsAsync(SelectedGuild.Id))
-                channels.Add(channel);
+            // Regular channels
+            if (SelectedGuild == FavoritesGuild)
+            {
+                // Group favorites by GuildId for batch processing.
+                // This allows us to fetch channels from multiple servers in parallel, improving performance.
+                var favoriteMap = _settingsService
+                    .FavoriteChannels.Select(kvp =>
+                        (ChannelId: Snowflake.Parse(kvp.Key), GuildId: Snowflake.Parse(kvp.Value))
+                    )
+                    .GroupBy(x => x.GuildId);
+
+                await Parallel.ForEachAsync(
+                    favoriteMap,
+                    new ParallelOptions { MaxDegreeOfParallelism = 10 },
+                    async (group, ct) =>
+                    {
+                        try
+                        {
+                            var guildId = group.Key;
+                            var targetChannelIds = group.Select(x => x.ChannelId).ToHashSet();
+
+                            // We need to look up parents (categories), so we have to fetch all channels from the guild first.
+                            // If we only fetched the specific channels, we wouldn't know which category they belong to,
+                            // and they would appear as "orphans" in the tree structure.
+                            var guildChannels = new List<Channel>();
+                            await foreach (
+                                var channel in _discord.GetGuildChannelsAsync(guildId, ct)
+                            )
+                            {
+                                guildChannels.Add(channel);
+                            }
+
+                            var channelsToAdd = new HashSet<Channel>();
+
+                            foreach (var channel in guildChannels)
+                            {
+                                // If this channel is one of our favorites
+                                if (targetChannelIds.Contains(channel.Id))
+                                {
+                                    channelsToAdd.Add(channel);
+
+                                    // Crucial Step: Add parents (categories) recursively.
+                                    // The tree builder needs the full hierarchy to display the channel correctly.
+                                    var current = channel;
+                                    while (current.Parent is not null)
+                                    {
+                                        var parentId = current.Parent.Id;
+                                        var parent = guildChannels.FirstOrDefault(c =>
+                                            c.Id == parentId
+                                        );
+
+                                        if (parent is not null)
+                                        {
+                                            channelsToAdd.Add(parent);
+                                            current = parent;
+                                        }
+                                        else
+                                        {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Thread-safely add the found channels to the main list
+                            lock (channels)
+                            {
+                                channels.AddRange(channelsToAdd);
+                            }
+                        }
+                        catch
+                        {
+                            // Ignore errors retrieving specific guild channels (e.g. if the user left the server)
+                        }
+                    }
+                );
+            }
+            else
+            {
+                await foreach (var channel in _discord.GetGuildChannelsAsync(SelectedGuild.Id))
+                    channels.Add(channel);
+            }
 
             // Threads
             if (_settingsService.ThreadInclusionMode != ThreadInclusionMode.None)
@@ -192,12 +279,14 @@ public partial class DashboardViewModel : ViewModelBase
             // Build a hierarchy of channels
             var channelTree = ChannelConnection.BuildTree(
                 channels
+                    .DistinctBy(c => c.Id)
                     .OrderByDescending(c => c.IsDirect ? c.LastMessageId : null)
                     .ThenBy(c => c.Position)
                     .ToArray()
             );
 
-            AvailableChannels = channelTree;
+            // Map to ViewModels
+            AvailableChannels = MapToViewModels(channelTree, _settingsService);
             SelectedChannels.Clear();
         }
         catch (DiscordChatExporterException ex) when (!ex.IsFatal)
@@ -247,7 +336,10 @@ public partial class DashboardViewModel : ViewModelBase
                 .Channels!.Select(c => new { Channel = c, Progress = _progressMuxer.CreateInput() })
                 .ToArray();
 
+            var processedExportCount = 0;
             var successfulExportCount = 0;
+
+            ExportStatusText = $"Exporting 0/{channelProgressPairs.Length} channels...";
 
             await Parallel.ForEachAsync(
                 channelProgressPairs,
@@ -294,6 +386,9 @@ public partial class DashboardViewModel : ViewModelBase
                     finally
                     {
                         progress.ReportCompletion();
+                        var processed = Interlocked.Increment(ref processedExportCount);
+                        ExportStatusText =
+                            $"Exporting {processed}/{channelProgressPairs.Length} channels...";
                     }
                 }
             );
@@ -336,5 +431,19 @@ public partial class DashboardViewModel : ViewModelBase
         }
 
         base.Dispose(disposing);
+    }
+
+    private static IReadOnlyList<ChannelViewModel> MapToViewModels(
+        IReadOnlyList<ChannelConnection> connections,
+        SettingsService settingsService
+    )
+    {
+        return connections
+            .Select(c => new ChannelViewModel(
+                c.Channel,
+                MapToViewModels(c.Children, settingsService),
+                settingsService
+            ))
+            .ToArray();
     }
 }

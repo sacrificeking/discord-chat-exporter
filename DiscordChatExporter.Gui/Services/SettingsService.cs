@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json.Serialization;
 using Cogwheel;
@@ -69,6 +70,42 @@ public partial class SettingsService()
     [ObservableProperty]
     public partial string? LastAssetsDirPath { get; set; }
 
+    /// <summary>
+    /// Stores the list of favorited channels.
+    /// Key: Channel ID (string)
+    /// Value: Guild ID (string) - We store the Guild ID to efficiently group fetching by server.
+    /// </summary>
+    public Dictionary<string, string> FavoriteChannels { get; set; } = [];
+
+    public bool IsChannelFavorited(Snowflake channelId) =>
+        FavoriteChannels.ContainsKey(channelId.ToString());
+
+    public void ToggleFavoriteChannel(Snowflake channelId, Snowflake guildId)
+    {
+        var key = channelId.ToString();
+        var value = guildId.ToString();
+
+        if (FavoriteChannels.ContainsKey(key))
+            FavoriteChannels.Remove(key);
+        else
+            FavoriteChannels[key] = value;
+
+        Save();
+    }
+
+    public void ToggleFavoriteChannel(Snowflake channelId, Snowflake guildId, bool isFavorited)
+    {
+        var key = channelId.ToString();
+        var value = guildId.ToString();
+
+        if (isFavorited)
+            FavoriteChannels[key] = value;
+        else
+            FavoriteChannels.Remove(key);
+
+        Save();
+    }
+
     public override void Save()
     {
         // Clear the token if it's not supposed to be persisted
@@ -85,5 +122,6 @@ public partial class SettingsService()
 public partial class SettingsService
 {
     [JsonSerializable(typeof(SettingsService))]
+    [JsonSerializable(typeof(Dictionary<string, string>))]
     private partial class SerializerContext : JsonSerializerContext;
 }

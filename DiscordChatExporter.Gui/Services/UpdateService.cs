@@ -1,93 +1,71 @@
-﻿using System;
-using System.Runtime.InteropServices;
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Onova;
-using Onova.Exceptions;
 using Onova.Services;
 
 namespace DiscordChatExporter.Gui.Services;
 
-public class UpdateService(SettingsService settingsService) : IDisposable
+[SuppressMessage("Interoperability", "CA1416:Validate platform compatibility")]
+public class UpdateService : IDisposable
 {
-    private readonly IUpdateManager? _updateManager = OperatingSystem.IsWindows()
-        ? new UpdateManager(
+    private readonly SettingsService _settingsService;
+    private readonly IUpdateManager _updateManager;
+
+    public UpdateService(SettingsService settingsService)
+    {
+        _settingsService = settingsService;
+
+        _updateManager = new UpdateManager(
             new GithubPackageResolver(
-                "Tyrrrz",
-                "DiscordChatExporter",
-                // Examples:
-                // DiscordChatExporter.win-arm64.zip
-                // DiscordChatExporter.win-x64.zip
-                // DiscordChatExporter.linux-x64.zip
-                $"DiscordChatExporter.{RuntimeInformation.RuntimeIdentifier}.zip"
+                "sacrificeking",
+                "discord-chat-exporter",
+                "DiscordChatExporter.zip"
             ),
             new ZipPackageExtractor()
-        )
-        : null;
-
-    private Version? _updateVersion;
-    private bool _updatePrepared;
-    private bool _updaterLaunched;
-
-    public async ValueTask<Version?> CheckForUpdatesAsync()
-    {
-        if (_updateManager is null)
-            return null;
-
-        if (!settingsService.IsAutoUpdateEnabled)
-            return null;
-
-        var check = await _updateManager.CheckForUpdatesAsync();
-        return check.CanUpdate ? check.LastVersion : null;
+        );
     }
 
-    public async ValueTask PrepareUpdateAsync(Version version)
+    public async Task<Version?> CheckForUpdatesAsync()
     {
-        if (_updateManager is null)
-            return;
-
-        if (!settingsService.IsAutoUpdateEnabled)
-            return;
-
         try
         {
-            await _updateManager.PrepareUpdateAsync(_updateVersion = version);
-            _updatePrepared = true;
+            if (!_settingsService.IsAutoUpdateEnabled)
+                return null;
+
+            var result = await _updateManager.CheckForUpdatesAsync();
+            return result.CanUpdate ? result.LastVersion : null;
         }
-        catch (UpdaterAlreadyLaunchedException)
+        catch (Exception)
         {
-            // Ignore race conditions
+            // Ignore errors
+            return null;
         }
-        catch (LockFileNotAcquiredException)
+    }
+
+    public async Task PrepareUpdateAsync(Version version)
+    {
+        try
         {
-            // Ignore race conditions
+            await _updateManager.PrepareUpdateAsync(version);
+        }
+        catch (Exception)
+        {
+            // Ignore errors
         }
     }
 
     public void FinalizeUpdate(bool needRestart)
     {
-        if (_updateManager is null)
-            return;
-
-        if (!settingsService.IsAutoUpdateEnabled)
-            return;
-
-        if (_updateVersion is null || !_updatePrepared || _updaterLaunched)
-            return;
-
         try
         {
-            _updateManager.LaunchUpdater(_updateVersion, needRestart);
-            _updaterLaunched = true;
+            _updateManager.LaunchUpdater(version: new Version(0, 0, 0), needRestart);
         }
-        catch (UpdaterAlreadyLaunchedException)
+        catch (Exception)
         {
-            // Ignore race conditions
-        }
-        catch (LockFileNotAcquiredException)
-        {
-            // Ignore race conditions
+            // Ignore errors
         }
     }
 
-    public void Dispose() => _updateManager?.Dispose();
+    public void Dispose() => _updateManager.Dispose();
 }

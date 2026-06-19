@@ -148,7 +148,7 @@ public partial class ExportRequest
         return PathEx.EscapeFileName(buffer.ToString());
     }
 
-    private static string FormatPath(
+    public static string FormatPath(
         string path,
         Guild guild,
         Channel channel,

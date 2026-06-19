@@ -33,7 +33,11 @@
   <ItemGroup>
     <ProjectReference Include="..\DiscordChatExporter.Core\DiscordChatExporter.Core.csproj" />
   </ItemGroup>
-  <Target Name="PublishMacOSBundle" AfterTargets="Publish" Condition="$(PublishMacOSBundle)">
+  <Target
+    Name="PublishMacOSBundle"
+    AfterTargets="Publish"
+    Condition="'$(PublishMacOSBundle)' == 'true'"
+  >
     <Exec
       Command="pwsh -ExecutionPolicy Bypass -File $(ProjectDir)/Publish-MacOSBundle.ps1 -PublishDirPath $(PublishDir) -IconsFilePath $(ProjectDir)/../favicon.icns -FullVersion $(Version) -ShortVersion $(AssemblyVersion)"
       LogStandardErrorAsError="true"

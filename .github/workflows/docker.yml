@@ -63,7 +63,7 @@ jobs:
       - name: Login to DockerHub
         run: >
           echo ${{ secrets.DOCKER_TOKEN }} |
-          docker login --username tyrrrz --password-stdin
+          docker login --username sacrificeking --password-stdin
 
       - name: Build & push image
         run: >
@@ -72,6 +72,6 @@ jobs:
           --platform linux/amd64,linux/arm64
           --build-arg VERSION=${{ github.ref_type == 'tag' && github.ref_name || format('999.9.9-ci-{0}', github.sha) }}
           --push
-          --tag tyrrrz/discordchatexporter:latest
-          ${{ github.ref_type == 'tag' && '--tag tyrrrz/discordchatexporter:$GITHUB_REF_NAME' || '' }}
-          ${{ github.ref_type == 'tag' && '--tag tyrrrz/discordchatexporter:stable' || '' }}
+          --tag sacrificeking/discordchatexporter:latest
+          ${{ github.ref_type == 'tag' && '--tag sacrificeking/discordchatexporter:$GITHUB_REF_NAME' || '' }}
+          ${{ github.ref_type == 'tag' && '--tag sacrificeking/discordchatexporter:stable' || '' }}
