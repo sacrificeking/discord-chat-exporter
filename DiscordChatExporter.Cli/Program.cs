@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using CliFx;
 using DiscordChatExporter.Cli.Commands;
@@ -27,15 +27,8 @@ public static class Program
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(PartitionLimit))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MessageFilter))]
     public static async Task<int> Main(string[] args) =>
-        await new CliApplicationBuilder()
-            .AddCommand<ExportAllCommand>()
-            .AddCommand<ExportChannelsCommand>()
-            .AddCommand<ExportDirectMessagesCommand>()
-            .AddCommand<ExportGuildCommand>()
-            .AddCommand<GetChannelsCommand>()
-            .AddCommand<GetDirectChannelsCommand>()
-            .AddCommand<GetGuildsCommand>()
-            .AddCommand<GuideCommand>()
+        await new CommandLineApplicationBuilder()
+            .AddCommandsFromThisAssembly()
             .Build()
             .RunAsync(args);
 }

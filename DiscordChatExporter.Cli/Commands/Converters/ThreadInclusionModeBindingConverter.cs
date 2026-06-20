@@ -1,13 +1,19 @@
-﻿using System;
-using CliFx.Extensibility;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using CliFx.Activation;
 using DiscordChatExporter.Cli.Commands.Shared;
 
 namespace DiscordChatExporter.Cli.Commands.Converters;
 
-internal class ThreadInclusionModeBindingConverter : BindingConverter<ThreadInclusionMode>
+internal class ThreadInclusionModeBindingConverter : InputConverter<ThreadInclusionMode>
 {
-    public override ThreadInclusionMode Convert(string? rawValue)
+    public override bool CanConvertSequence => false;
+
+    public override ThreadInclusionMode Convert(IReadOnlyList<string> rawValues)
     {
+        var rawValue = rawValues.LastOrDefault();
+
         // Empty or unset value is treated as 'active' to match the previous behavior
         if (string.IsNullOrWhiteSpace(rawValue))
             return ThreadInclusionMode.Active;

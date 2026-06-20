@@ -24,9 +24,9 @@ This program allows you to download chat history from Discord servers and Direct
 
 ### Prerequisites
 
-To run this application, you need **Windows** and the **.NET 9 Desktop Runtime**.
+To run this application, you need **Windows** and the **.NET 10 Desktop Runtime**.
 > [!TIP]
-> **Download .NET 9 Desktop Runtime here:** [Microsoft .NET Download Page](https://dotnet.microsoft.com/download/dotnet/9.0) -> Look for ".NET Desktop Runtime" under Windows.
+> **Download .NET 10 Desktop Runtime here:** [Microsoft .NET Download Page](https://dotnet.microsoft.com/download/dotnet/10.0) -> Look for ".NET Desktop Runtime" under Windows.
 
 ### Installation
 
@@ -82,7 +82,7 @@ Run `dotnet DiscordChatExporter.Cli.dll --help` to see all available commands.
 ## ❓ Troubleshooting
 
 **"The application won't start"**
-*   Please verify you have installed the [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0).
+*   Please verify you have installed the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0).
 *   Try running the `.exe` as Administrator.
 
 **"Access Denied" or "401 Unauthorized"**
@@ -91,4 +91,4 @@ Run `dotnet DiscordChatExporter.Cli.dll --help` to see all available commands.
 
 See the [Changelog](CHANGELOG.md) for details on recent updates. Released under the [MIT License](License.txt).
 
-*This project is built with ❤️ using C#, Avalonia UI, and .NET 9.*
+*This project is built with ❤️ using C#, Avalonia UI, and .NET 10.*

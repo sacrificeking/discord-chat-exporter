@@ -63,7 +63,8 @@ public partial record Embed
             json.GetPropertyOrNull("fields")
                 ?.EnumerateArrayOrNull()
                 ?.Select(EmbedField.Parse)
-                .ToArray() ?? [];
+                .ToArray()
+            ?? [];
 
         var thumbnail = json.GetPropertyOrNull("thumbnail")?.Pipe(EmbedImage.Parse);
 
@@ -78,7 +79,8 @@ public partial record Embed
             json.GetPropertyOrNull("image")
                 ?.Pipe(EmbedImage.Parse)
                 .ToSingletonEnumerable()
-                .ToArray() ?? [];
+                .ToArray()
+            ?? [];
 
         var video = json.GetPropertyOrNull("video")?.Pipe(EmbedVideo.Parse);
 

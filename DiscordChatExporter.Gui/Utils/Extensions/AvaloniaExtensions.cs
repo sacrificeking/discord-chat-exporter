@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.VisualTree;
 
@@ -13,7 +13,11 @@ internal static class AvaloniaExtensions
 
     public static TopLevel? TryGetTopLevel(this IApplicationLifetime lifetime) =>
         lifetime.TryGetMainWindow()
-        ?? (lifetime as ISingleViewApplicationLifetime)?.MainView?.GetVisualRoot() as TopLevel;
+        ?? (
+            lifetime is ISingleViewApplicationLifetime singleView && singleView.MainView is not null
+                ? TopLevel.GetTopLevel(singleView.MainView)
+                : null
+        );
 
     public static bool TryShutdown(this IApplicationLifetime lifetime, int exitCode = 0)
     {

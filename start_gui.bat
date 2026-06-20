@@ -6,5 +6,5 @@ if %errorlevel% neq 0 (
     pause
     exit /b %errorlevel%
 )
-"C:\Program Files\dotnet\dotnet.exe" exec "DiscordChatExporter.Gui\bin\Release\net9.0\DiscordChatExporter.dll"
+"C:\Program Files\dotnet\dotnet.exe" exec "DiscordChatExporter.Gui\bin\Release\net10.0\DiscordChatExporter.dll"
 pause

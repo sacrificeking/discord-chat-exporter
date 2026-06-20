@@ -1,12 +1,18 @@
-﻿using System.Globalization;
-using CliFx.Extensibility;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using CliFx.Activation;
 
 namespace DiscordChatExporter.Cli.Commands.Converters;
 
-internal class TruthyBooleanBindingConverter : BindingConverter<bool>
+internal class TruthyBooleanBindingConverter : InputConverter<bool>
 {
-    public override bool Convert(string? rawValue)
+    public override bool CanConvertSequence => false;
+
+    public override bool Convert(IReadOnlyList<string> rawValues)
     {
+        var rawValue = rawValues.LastOrDefault();
+
         // Empty or unset value is treated as 'true', to match the regular boolean behavior
         if (string.IsNullOrWhiteSpace(rawValue))
             return true;

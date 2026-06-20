@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Superpower;
 using Superpower.Parsers;
@@ -7,9 +7,6 @@ namespace DiscordChatExporter.Core.Utils.Extensions;
 
 public static class SuperpowerExtensions
 {
-    public static TextParser<string> Text(this TextParser<char[]> parser) =>
-        parser.Select(chars => new string(chars));
-
     public static TextParser<T> Token<T>(this TextParser<T> parser) =>
         parser.Between(Character.WhiteSpace.IgnoreMany(), Character.WhiteSpace.IgnoreMany());
 
